@@ -22,6 +22,10 @@ DefaultDirName={localappdata}\PrestamoFlow
 DefaultGroupName={#AppName}
 AllowNoIcons=yes
 PrivilegesRequired=lowest
+; Cierra PrestamoFlow automáticamente si está en ejecución durante
+; la instalación o desinstalación (evita errores de archivos en uso).
+CloseApplications=yes
+ForceCloseApplications=yes
 OutputDir=output
 OutputBaseFilename=PrestamoFlow-Setup-{#AppVersion}
 Compression=lzma2

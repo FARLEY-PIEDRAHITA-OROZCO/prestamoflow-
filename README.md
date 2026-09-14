@@ -407,6 +407,12 @@ Node en el PC destino).
    desinstalador; la app se instala en `%LOCALAPPDATA%\PrestamoFlow` (escribible
    sin permisos de administrador).
 
+   El instalador cierra PrestamoFlow si está abierto durante la instalación o
+   desinstalación (reinstalaciones sin errores de archivos en uso). El ejecutable
+   además detecta si la app ya está corriendo (entonces solo abre el navegador,
+   sin arrancar una segunda instancia) y muestra un aviso si el puerto `8001`
+   está ocupado por otra aplicación.
+
 Internamente, `backend/serve.py` levanta uvicorn embebido, abre el navegador en
 `http://127.0.0.1:8001` y registra en el log. El puerto se cambia con la variable
 `PRESTAMOS_PORT`.
