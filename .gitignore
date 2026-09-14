@@ -18,6 +18,11 @@ frontend/dist/
 .env
 .env.*
 
+# Empaquetado (PyInstaller / instalador)
+backend/build/
+backend/dist/
+installer/output/
+
 # Editores / sistemas
 .DS_Store
 Thumbs.db

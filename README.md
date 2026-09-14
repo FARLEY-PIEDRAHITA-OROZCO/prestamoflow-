@@ -348,6 +348,53 @@ npm run build
 
 ---
 
+## Empaquetado como aplicación de escritorio (.exe)
+
+El sistema puede distribuirse como **un solo ejecutable de Windows** que levanta
+la API y sirve la interfaz (todo en el mismo proceso, sin necesidad de Python o
+Node en el PC destino).
+
+1. **Compilar el frontend** (producción):
+
+   ```
+   cd frontend
+   npm run build
+   ```
+
+2. **Empaquetar con PyInstaller** (usa el spec incluido):
+
+   ```
+   cd backend
+   .venv\Scripts\pip install pyinstaller
+   .venv\Scripts\pyinstaller.exe PrestamoFlow.spec --noconfirm --clean
+   ```
+
+   Resultado: `backend/dist/PrestamoFlow/PrestamoFlow.exe` (carpeta completa).
+
+3. **Datos y registros**: el ejecutable guarda junto a sí mismo `prestamos.db`,
+   `.secret` y la carpeta `backups/`, además de `prestamosflow.log`. Al primer
+   arranque pide registrar la cuenta inicial. Para conservar datos reales, basta
+   copiar la `prestamos.db` existente junto al ejecutable antes del primer uso.
+
+4. **Instalador opcional** (distribución tipo "setup.exe"): con [Inno Setup 6]
+   compilar `installer/prestamoflow.iss`:
+
+   ```
+   iscc.exe installer\prestamoflow.iss
+   ```
+
+   Genera `installer/output/PrestamoFlow-Setup-1.0.0.exe` con acceso directo y
+   desinstalador; la app se instala en `%LOCALAPPDATA%\PrestamoFlow` (escribible
+   sin permisos de administrador).
+
+Internamente, `backend/serve.py` levanta uvicorn embebido, abre el navegador en
+`http://127.0.0.1:8001` y registra en el log. El puerto se cambia con la variable
+`PRESTAMOS_PORT`.
+
+[Inno Setup 6]: https://jrsoftware.org/isinfo.php
+
+---
+
 ## Responsive / UX
 
 La interfaz se adapta en tres puntos de ruptura:

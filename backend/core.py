@@ -1,4 +1,4 @@
-import os, sqlite3, bcrypt, jwt, secrets, time, random, shutil
+import os, sys, sqlite3, bcrypt, jwt, secrets, time, random, shutil
 from collections import defaultdict, deque
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
@@ -8,8 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 
-DEFAULT_DB = Path(__file__).with_name("prestamos.db")
-SECRET_FILE = Path(__file__).with_name(".secret")
+def data_dir():
+    """Carpeta estable para datos: junto al ejecutable cuando es un bundle
+    (PyInstaller) o junto al código en desarrollo. Nunca dentro de _MEIPASS."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+DEFAULT_DB = data_dir() / "prestamos.db"
+SECRET_FILE = data_dir() / ".secret"
 ALGO = "HS256"
 TOKEN_HORAS = 8
 SCHEMA_VERSION = 4
@@ -126,6 +134,15 @@ def daily_backup():
     except OSError:
         pass
 daily_backup()
+
+
+def frontend_dist():
+    """Raíz del frontend compilado (index.html, assets/). En un bundle de
+    PyInstaller viaja como 'frontend_dist'; en desarrollo es frontend/dist."""
+    if getattr(sys, "frozen", False):
+        base = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+        return base / "frontend_dist"
+    return Path(__file__).resolve().parent.parent / "frontend" / "dist"
 
 class PersonaIn(BaseModel):
     nombre: str = Field(min_length=1, max_length=150)
