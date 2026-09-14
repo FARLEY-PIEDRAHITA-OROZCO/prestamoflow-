@@ -3,6 +3,7 @@
 <p align="center">
   <img alt="Licencia" src="https://img.shields.io/badge/license-MIT-blue.svg">
   <img alt="Conventional Commits" src="https://img.shields.io/badge/conventional%20commits-1.0.0-yellow.svg">
+  <img alt="Versión" src="https://img.shields.io/github/v/release/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-">
   <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/ci.yml?branch=main">
 </p>
 
