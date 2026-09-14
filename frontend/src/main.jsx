@@ -5,10 +5,27 @@ import {
   Percent, CircleDollarSign, ArrowDownLeft, MoreHorizontal, X, CheckCircle2,
   History, RefreshCw, UserPlus, Inbox, Sparkles, AlertCircle, Pencil, Trash2,
   Archive, RotateCcw, Lock, LogOut, Eye, EyeOff, KeyRound, Loader2, ShieldCheck, ShieldAlert,
-  ScrollText, Undo2, Download, Menu
+  ScrollText, Undo2, Download, Menu, CalendarClock, Clock
 } from "lucide-react";
 import "./styles.css";
 import { API, money, fmtDate, api, highlight, avatarColor, initials } from "./lib.jsx";
+
+const daysUntil = v => {
+  if (!v) return null;
+  const d = new Date(v).setHours(0, 0, 0, 0);
+  const today = new Date().setHours(0, 0, 0, 0);
+  return Math.round((d - today) / 86400000);
+};
+
+function Logo({ size = 22 }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.3" stroke="currentColor" strokeWidth="2.1" />
+      <path d="M6.3 9.1c.9-1.5 2.5-2.5 4.4-2.5 2 0 3.4 1 3.4 2.8 0 1.8-1.5 2.6-3.1 3.1-1.9.6-3.6 1.5-3.6 3.4 0 1.7 1.8 2.8 3.7 2.8 1.7 0 3.2-.9 4-2.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 3.4v2.9M12 12.1v2.6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function App() {
   const [page, setPage] = useState("dashboard");
@@ -20,7 +37,16 @@ function App() {
   const [toasts, setToasts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifSeen, setNotifSeen] = useState(false);
+  const [notifSeen, setNotifSeen] = useState(() => localStorage.getItem("pf_notifs_read") === "1");
+
+  const toggleNotif = useCallback(() => {
+    setNotifOpen(o => {
+      const next = !o;
+      if (next) { setNotifSeen(true); localStorage.setItem("pf_notifs_read", "1"); }
+      return next;
+    });
+  }, []);
+
   const [showArchived, setShowArchived] = useState(false);
   const [auth, setAuth] = useState(null);
   const [authPending, setAuthPending] = useState(true);
@@ -45,10 +71,16 @@ function App() {
       .finally(() => setAuthPending(false));
   }, []);
 
-  const notifications = useMemo(() => ({
-    pending: loans.filter(l => l.balance > 0),
-    archived: people.filter(p => !p.activa).length,
-  }), [loans, people]);
+  const notifications = useMemo(() => {
+    const pending = loans.filter(l => l.balance > 0);
+    const overdue = pending.filter(l => l.mora_dias > 0);
+    const dueSoon = pending.filter(l => {
+      const n = daysUntil(l.vencimiento);
+      return l.mora_dias <= 0 && n !== null && n >= 0 && n <= 7;
+    });
+    const inCourse = pending.filter(l => !(l.mora_dias > 0) && !(daysUntil(l.vencimiento) !== null && daysUntil(l.vencimiento) >= 0 && daysUntil(l.vencimiento) <= 7));
+    return { pending, overdue, dueSoon, inCourse, archived: people.filter(p => !p.activa).length };
+  }, [loans, people]);
 
   const searchResults = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -146,11 +178,15 @@ function App() {
           onPickPerson={p => { setQ(p.nombre); setPage("people"); setShowArchived(!p.activa); }}
           onPickLoan={l => { setQ(l.person); setPage("loans"); }}
           notifOpen={notifOpen}
-          onToggleNotif={() => { setNotifOpen(o => !o); setNotifSeen(true); }}
+          onToggleNotif={toggleNotif}
           pendingLoans={notifications.pending}
+          overdue={notifications.overdue}
+          dueSoon={notifications.dueSoon}
+          inCourseCount={notifications.inCourse.length}
           archivedCount={notifications.archived}
           showBadge={!notifSeen && notifications.pending.length > 0}
           onOpenLoans={() => { setPage("loans"); setNotifOpen(false); }}
+          onOpenLoan={l => { setPage("loans"); setNotifOpen(false); setModal({ t: "hist", id: l.id }); }}
         />
         <div className="content">
           {loading && <Skeleton />}
@@ -247,7 +283,7 @@ function Sidebar({ page, setPage, user, onLogout, onChangePass, onRecovery, onBa
   return (
     <aside>
       <div className="brand">
-        <div className="logo"><Sparkles /></div>
+        <div className="logo"><Logo /></div>
         <div className="brand-text">
           <strong>Prestamo<span>Flow</span></strong>
           <small>Control personal</small>
@@ -288,7 +324,7 @@ function Sidebar({ page, setPage, user, onLogout, onChangePass, onRecovery, onBa
   );
 }
 
-function Header({ q, setQ, page, setPage, results, onPickPerson, onPickLoan, onRefresh, notifOpen, onToggleNotif, pendingLoans, archivedCount, showBadge, onOpenLoans }) {
+function Header({ q, setQ, page, setPage, results, onPickPerson, onPickLoan, onRefresh, notifOpen, onToggleNotif, pendingLoans, overdue, dueSoon, inCourseCount, archivedCount, showBadge, onOpenLoans, onOpenLoan }) {
   const searchRef = useRef(null);
   const notifRef = useRef(null);
   const [searchFocus, setSearchFocus] = useState(false);
@@ -385,26 +421,46 @@ function Header({ q, setQ, page, setPage, results, onPickPerson, onPickLoan, onR
       <div className="notif-wrap" ref={notifRef}>
         <button className={"icon-btn ghost" + (notifOpen ? " active" : "")} title="Notificaciones" onClick={onToggleNotif}>
           <Bell />
-          {showBadge && <i className="badge-count">{pendingLoans.length}</i>}
+          {showBadge && <i className="badge-count">{overdue.length + dueSoon.length}</i>}
         </button>
         {notifOpen && (
           <div className="notif-panel">
             <div className="notif-head">
               <h3>Notificaciones</h3>
-              {pendingLoans.length ? <span>{pendingLoans.length} pendiente(s)</span> : <span className="ok">Todo al día</span>}
+              {overdue.length + dueSoon.length ? <span>{overdue.length + dueSoon.length} pendiente(s)</span> : <span className="ok">Todo al día</span>}
             </div>
             <div className="notif-body">
-              {pendingLoans.length ? pendingLoans.map(l => (
-                <button className="notif-item" key={l.id} onClick={onOpenLoans}>
-                  <span className="notif-icon warn"><AlertCircle /></span>
-                  <div><b>{l.person}</b><small>Saldo pendiente {money(l.balance)}</small></div>
-                </button>
-              )) : (
+              {overdue.length > 0 && (
+                <>
+                  <p className="notif-group">Vencidos</p>
+                  {overdue.map(l => (
+                    <button className="notif-item" key={"o" + l.id} onClick={() => onOpenLoan(l)}>
+                      <span className="notif-icon danger"><Clock /></span>
+                      <div><b>{l.person}</b><small>Vencido hace <b className="red">{l.mora_dias}</b> día(s) · Debe {money(l.balance)}</small></div>
+                      <span className="badge mora">Mora</span>
+                    </button>
+                  ))}
+                </>
+              )}
+              {dueSoon.length > 0 && (
+                <>
+                  <p className="notif-group">Por vencer</p>
+                  {dueSoon.map(l => (
+                    <button className="notif-item" key={"s" + l.id} onClick={() => onOpenLoan(l)}>
+                      <span className="notif-icon warn"><CalendarClock /></span>
+                      <div><b>{l.person}</b><small>Vence en <b className="amber">{daysUntil(l.vencimiento)}</b> día(s) · Debe {money(l.balance)}</small></div>
+                      <span className="badge ghost">Pronto</span>
+                    </button>
+                  ))}
+                </>
+              )}
+              {overdue.length + dueSoon.length === 0 && (
                 <div className="empty compact"><div className="empty-icon"><CheckCircle2 /></div><p>No hay saldos pendientes por cobrar.</p></div>
               )}
             </div>
+            {inCourseCount > 0 && <div className="notif-foot">Tienes <b>{inCourseCount}</b> préstamo(s) en curso al día</div>}
             {archivedCount > 0 && <div className="notif-foot">Tienes <b>{archivedCount}</b> persona(s) archivada(s)</div>}
-            {pendingLoans.length > 0 && (
+            {overdue.length + dueSoon.length > 0 && (
               <div className="notif-cta"><button className="btn primary block" onClick={onOpenLoans}>Ver préstamos pendientes</button></div>
             )}
           </div>
@@ -416,7 +472,7 @@ function Header({ q, setQ, page, setPage, results, onPickPerson, onPickLoan, onR
       <div className="drawer-overlay" onClick={() => setDrawer(false)}>
         <div className="drawer" onClick={e => e.stopPropagation()}>
           <div className="drawer-head">
-            <div className="brand"><div className="logo"><Sparkles /></div><div className="brand-text"><strong>Prestamo<span>Flow</span></strong></div></div>
+            <div className="brand"><div className="logo"><Logo /></div><div className="brand-text"><strong>Prestamo<span>Flow</span></strong></div></div>
             <button className="icon-btn ghost" onClick={() => setDrawer(false)}><X /></button>
           </div>
           <nav className="nav-list">
@@ -919,7 +975,7 @@ function Splash() {
   return (
     <div className="auth-screen">
       <div className="auth-splash">
-        <div className="auth-logo"><Sparkles /></div>
+        <div className="auth-logo"><Logo size={26} /></div>
         <Loader2 className="icon-spin" />
       </div>
     </div>
@@ -1004,7 +1060,7 @@ function LoginScreen({ onOk }) {
         </div>
       ) : (
         <form className="auth-card" onSubmit={submit}>
-          <div className="auth-logo"><Sparkles /></div>
+          <div className="auth-logo"><Logo size={26} /></div>
           <h1>{mode === "register" ? "Crea tu cuenta" : mode === "forgot" ? "Recuperar contraseña" : "Bienvenido de nuevo"}</h1>
           <span className="auth-sub">
             {mode === "check" ? "Verificando configuración…" :

@@ -28,6 +28,7 @@ CloseApplications=yes
 CloseApplicationsFilter=*.exe
 OutputDir=output
 OutputBaseFilename=PrestamoFlow-Setup-{#AppVersion}
+SetupIconFile=..\backend\assets\PrestamoFlow.ico
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
