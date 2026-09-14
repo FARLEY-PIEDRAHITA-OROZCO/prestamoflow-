@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.2.0...v1.2.1) (2026-09-14)
+
+
+### Bug Fixes
+
+* PrestamoFlow.spec quedó con sintaxis inválida (datas de version.txt) ([f19cbe3](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/commit/f19cbe359fb4477e9bb51e6ddbf9068e2b64c657))
+
 ## [1.2.0](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.1.2...v1.2.0) (2026-09-14)
 
 
