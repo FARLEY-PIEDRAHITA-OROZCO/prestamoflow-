@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.2.1...v1.3.0) (2026-09-14)
+
+
+### Features
+
+* logo propio (favicon e icono del programa) y centro de notificaciones ([acfadce](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/commit/acfadcedef6eace4a7a3c666b46d4dd77468f302))
+
 ## [1.2.1](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.2.0...v1.2.1) (2026-09-14)
 
 
