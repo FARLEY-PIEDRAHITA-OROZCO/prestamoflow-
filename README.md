@@ -1,10 +1,9 @@
 # PrestamoFlow
 
-<!-- Tras crear el repo, reemplaza OWNER en el badge de CI por tu usuario de GitHub. -->
 <p align="center">
   <img alt="Licencia" src="https://img.shields.io/badge/license-MIT-blue.svg">
   <img alt="Conventional Commits" src="https://img.shields.io/badge/conventional%20commits-1.0.0-yellow.svg">
-  <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/OWNER/prestamoflow/ci.yml?branch=main">
+  <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/ci.yml?branch=main">
 </p>
 
 Sistema contable de préstamos personales: lleva el control de personas, préstamos con interés, pagos (registrar, editar y anular), vencimientos y mora, con auditoría completa, respaldo automático y una interfaz responsive.
