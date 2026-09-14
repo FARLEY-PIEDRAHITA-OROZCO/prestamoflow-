@@ -38,8 +38,8 @@ jobs:
           if [ -n "${{ inputs.tag }}" ]; then
             echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
           else
-            TAG=$(gh release list --limit 20 --json tagName,assets,isDraft \
-              | jq -r '.[] | select(.isDraft == false) | select((.assets | length) == 0) | .tagName' \
+            TAG=$(gh api "repos/${{ github.repository }}/releases?per_page=20&sort=created_at&direction=desc" \
+              | jq -r '.[] | select(.draft == false) | select((.assets | length) == 0) | .tag_name' \
               | head -n 1)
             echo "tag=${TAG:-}" >> "$GITHUB_OUTPUT"
           fi
