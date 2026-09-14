@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+backend/.venv/
+.pytest_cache/
+
+# Base de datos local y secretos (no subir)
+backend/prestamos.db
+backend/prestamos.db.*.bak
+backend/backups/
+backend/.secret
+backend/*.log
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+*.local
+.env
+.env.*
+
+# Editores / sistemas
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
