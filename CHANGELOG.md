@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.4.0...v1.4.1) (2026-09-14)
+
+
+### Bug Fixes
+
+* resolver el tag con la API de releases (gh release list no expone 'assets') ([02f1fed](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/commit/02f1fedfe334d1ec0252540ecfae129374ced269))
+
 ## [1.4.0](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.3.0...v1.4.0) (2026-09-14)
 
 
