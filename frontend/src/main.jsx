@@ -306,6 +306,7 @@ function Sidebar({ page, setPage, user, onLogout, onChangePass, onRecovery, onBa
           <div className="mini-icon"><ShieldCheck /></div>
           <span><b>Acceso protegido</b>Datos seguros con inicio de sesión</span>
         </div>
+        <AppVersion />
         <div className="profile" ref={ref} onClick={() => setMenu(o => !o)}>
           <Avatar name={user?.nombre || "Usuario"} size="sm" />
           <span><b>{user?.nombre || "Cuenta"}</b><small>@{user?.usuario || "usuario"}</small></span>
@@ -1243,6 +1244,16 @@ function Skeleton() {
       <div className="sk panel" />
     </div>
   );
+}
+
+function AppVersion() {
+  const [v, setV] = useState(null);
+
+  useEffect(() => {
+    api("/updates").then(i => setV(i.version || null)).catch(() => {});
+  }, []);
+
+  return <div className="app-version" title="Versión instalada de PrestamoFlow">{v ? <>Versión <b>{v}</b></> : "…"}</div>;
 }
 
 function UpdateBanner() {
