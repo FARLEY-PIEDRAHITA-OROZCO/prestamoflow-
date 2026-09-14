@@ -1,3 +1,7 @@
+# Crea releases automáticas con versiones según Conventional Commits
+# (feat -> minor, fix -> patch, BREAKING CHANGE -> major).
+# No hay pyproject/setup.py: se versiona por tags (release-type: simple).
+
 name: release-please
 
 on:
@@ -15,5 +19,4 @@ jobs:
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: python
-          package-name: prestamoflow
+          release-type: simple

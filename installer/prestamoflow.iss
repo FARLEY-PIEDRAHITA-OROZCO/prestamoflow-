@@ -7,7 +7,9 @@
 ; ejecutable, por eso se instala en %LOCALAPPDATA% (escribible sin admin).
 
 #define AppName "PrestamoFlow"
+#ifndef AppVersion
 #define AppVersion "1.0.0"
+#endif
 #define AppExeName "PrestamoFlow.exe"
 #define BundleRoot "..\backend\dist\PrestamoFlow"
 

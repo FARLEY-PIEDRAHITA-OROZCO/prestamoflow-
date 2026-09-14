@@ -1,0 +1,83 @@
+name: build-release
+
+# Cuando release-please publica una release, este workflow compila la app en
+# Windows y adjunta el instalador (.exe) y el paquete portable (.zip) a la release.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Build Windows artifacts
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Python dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Build executable (PyInstaller)
+        working-directory: backend
+        run: python -m PyInstaller PrestamoFlow.spec --noconfirm
+
+      - name: Version without 'v' prefix
+        id: version
+        shell: pwsh
+        run: |
+          $ver = "${{ github.event.release.tag_name }}".TrimStart('v')
+          "ver=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Package portable ZIP
+        working-directory: backend
+        shell: pwsh
+        run: |
+          Compress-Archive -Path (Join-Path "dist\PrestamoFlow" "*") `
+            -CompressionLevel Optimal `
+            -DestinationPath "${{ runner.temp }}\PrestamoFlow-${{ steps.version.outputs.ver }}.zip"
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer
+        working-directory: installer
+        run: |
+          iscc.exe prestamoflow.iss /DAppVersion=${{ steps.version.outputs.ver }}
+
+      - name: Upload assets to release
+        shell: pwsh
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" `
+            "${{ runner.temp }}\PrestamoFlow-${{ steps.version.outputs.ver }}.zip" `
+            "installer\output\PrestamoFlow-Setup-${{ steps.version.outputs.ver }}.exe" `
+            --clobber

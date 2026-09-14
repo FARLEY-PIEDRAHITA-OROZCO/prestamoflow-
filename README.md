@@ -388,6 +388,8 @@ Node en el PC destino).
 
    Resultado: `backend/dist/PrestamoFlow/PrestamoFlow.exe` (carpeta completa).
 
+   > En **GitHub Releases** esto ocurre solo: el flujo [build-release](.github/workflows/build-release.yml) se dispara cuando [release-please](.github/workflows/release-please.yml) publica una versión, compila la app en un runner de Windows y adjunta `PrestamoFlow-Setup-<version>.exe` (instalador) y `PrestamoFlow-<version>.zip` (portable).
+
 3. **Datos y registros**: el ejecutable guarda junto a sí mismo `prestamos.db`,
    `.secret` y la carpeta `backups/`, además de `prestamosflow.log`. Al primer
    arranque pide registrar la cuenta inicial. Para conservar datos reales, basta
