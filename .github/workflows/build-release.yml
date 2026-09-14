@@ -1,17 +1,28 @@
 name: build-release
 
-# Cuando release-please publica una release, este workflow compila la app en
-# Windows y adjunta el instalador (.exe) y el paquete portable (.zip) a la release.
+# Compila la app en Windows y adjunta el instalador (.exe) y el ZIP portable
+# a la release de GitHub.
+#
+# Se dispara por el push del tag de versión ("v*") porque las releases creadas
+# por GITHUB_TOKEN (release-please) NO emiten el evento "release: published".
+# workflow_dispatch permite reconstruir/subir assets de cualquier release.
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag al que subir los artefactos (p.ej. v1.1.0). Vacío = usa el tag del evento."
+        required: false
+        default: ""
 
 permissions:
   contents: write
 
 concurrency:
-  group: build-release-${{ github.event.release.tag_name }}
+  group: build-release-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -51,11 +62,16 @@ jobs:
         working-directory: backend
         run: python -m PyInstaller PrestamoFlow.spec --noconfirm
 
-      - name: Version without 'v' prefix
+      - name: Resolve release tag
         id: version
         shell: pwsh
         run: |
-          $ver = "${{ github.event.release.tag_name }}".TrimStart('v')
+          $tag = "${{ github.event.release.tag_name }}"
+          if (-not $tag) { $tag = "${{ inputs.tag }}" }
+          if (-not $tag) { $tag = "${{ github.ref_name }}" }
+          if (-not $tag) { throw "No se pudo resolver el tag de la release" }
+          $ver = $tag.TrimStart('v')
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "ver=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Package portable ZIP
@@ -74,10 +90,22 @@ jobs:
         run: |
           iscc.exe prestamoflow.iss /DAppVersion=${{ steps.version.outputs.ver }}
 
+      - name: Wait for release to exist
+        run: |
+          for i in $(seq 1 30); do
+            if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+              echo "release ${{ steps.version.outputs.tag }} encontrada"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "La release ${{ steps.version.outputs.tag }} no existe aun" >&2
+          exit 1
+
       - name: Upload assets to release
         shell: pwsh
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" `
+          gh release upload "${{ steps.version.outputs.tag }}" `
             "${{ runner.temp }}\PrestamoFlow-${{ steps.version.outputs.ver }}.zip" `
             "installer\output\PrestamoFlow-Setup-${{ steps.version.outputs.ver }}.exe" `
             --clobber
