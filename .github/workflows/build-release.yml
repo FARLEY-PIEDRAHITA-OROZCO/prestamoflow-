@@ -91,6 +91,7 @@ jobs:
           iscc.exe prestamoflow.iss /DAppVersion=${{ steps.version.outputs.ver }}
 
       - name: Wait for release to exist
+        shell: bash
         run: |
           for i in $(seq 1 30); do
             if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
