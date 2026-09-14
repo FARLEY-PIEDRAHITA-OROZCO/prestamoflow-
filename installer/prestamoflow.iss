@@ -25,7 +25,7 @@ PrivilegesRequired=lowest
 ; Cierra PrestamoFlow automáticamente si está en ejecución durante
 ; la instalación o desinstalación (evita errores de archivos en uso).
 CloseApplications=yes
-ForceCloseApplications=yes
+CloseApplicationsFilter=*.exe
 OutputDir=output
 OutputBaseFilename=PrestamoFlow-Setup-{#AppVersion}
 Compression=lzma2
@@ -51,3 +51,23 @@ Filename: "{app}\{#AppExeName}"; Description: "Iniciar {#AppName} ahora"; Flags:
 Type: filesandordirs; Name: "{app}\prestamos.db"
 Type: filesandordirs; Name: "{app}\.secret"
 Type: filesandordirs; Name: "{app}\backups"
+
+[Code]
+procedure KillPrestamoFlow;
+var
+  ResultCode: Integer;
+begin
+  Exec('taskkill.exe', '/F /IM PrestamoFlow.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;
+
+function InitializeSetup(): Boolean;
+begin
+  KillPrestamoFlow;
+  Result := True;
+end;
+
+function InitializeUninstall(): Boolean;
+begin
+  KillPrestamoFlow;
+  Result := True;
+end;
