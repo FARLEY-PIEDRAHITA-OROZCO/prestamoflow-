@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.1.1...v1.1.2) (2026-09-14)
+
+
+### Bug Fixes
+
+* kill running app before install/uninstall (Inno Pascal) ([bfd36fd](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/commit/bfd36fd2b430ddfa92b724c454612d7e8303688b))
+
 ## [1.1.1](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.1.0...v1.1.1) (2026-09-14)
 
 
