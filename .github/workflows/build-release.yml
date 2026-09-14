@@ -3,31 +3,51 @@ name: build-release
 # Compila la app en Windows y adjunta el instalador (.exe) y el ZIP portable
 # a la release de GitHub.
 #
-# Se dispara por el push del tag de versión ("v*") porque las releases creadas
-# por GITHUB_TOKEN (release-please) NO emiten el evento "release: published".
-# workflow_dispatch permite reconstruir/subir assets de cualquier release.
+# GitHub NO emite eventos (push de tag ni "release: published") cuando el tag y
+# la release los crea release-please con GITHUB_TOKEN. Por eso este workflow
+# funciona con un sondeo periódico: cada 15 min revisa si existe una release sin
+# binarios y, si la hay, la compila y le sube los assets. También puede
+# dispararse manualmente (workflow_dispatch) para cualquier release.
 
 on:
-  push:
-    tags:
-      - "v*"
+  schedule:
+    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag al que subir los artefactos (p.ej. v1.1.0). Vacío = usa el tag del evento."
+        description: "Tag al que subir los artefactos (p.ej. v1.1.1). Vacío = la release más reciente sin binarios."
         required: false
         default: ""
 
 permissions:
   contents: write
 
-concurrency:
-  group: build-release-${{ github.ref_name }}
-  cancel-in-progress: false
-
 jobs:
+  resolve-target:
+    name: Resolve release to build
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - name: Resolve tag
+        id: resolve
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            TAG=$(gh release list --limit 20 --json tagName,assets,isDraft \
+              | jq -r '.[] | select(.isDraft == false) | select((.assets | length) == 0) | .tagName' \
+              | head -n 1)
+            echo "tag=${TAG:-}" >> "$GITHUB_OUTPUT"
+          fi
+
   windows:
     name: Build Windows artifacts
+    needs: resolve-target
+    if: needs.resolve-target.outputs.tag != ''
     runs-on: windows-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,14 +82,11 @@ jobs:
         working-directory: backend
         run: python -m PyInstaller PrestamoFlow.spec --noconfirm
 
-      - name: Resolve release tag
+      - name: Version without 'v' prefix
         id: version
         shell: pwsh
         run: |
-          $tag = "${{ github.event.release.tag_name }}"
-          if (-not $tag) { $tag = "${{ inputs.tag }}" }
-          if (-not $tag) { $tag = "${{ github.ref_name }}" }
-          if (-not $tag) { throw "No se pudo resolver el tag de la release" }
+          $tag = "${{ needs.resolve-target.outputs.tag }}"
           $ver = $tag.TrimStart('v')
           "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "ver=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
