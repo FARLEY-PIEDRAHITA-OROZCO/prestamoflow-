@@ -413,6 +413,16 @@ Node en el PC destino).
    sin arrancar una segunda instancia) y muestra un aviso si el puerto `8001`
    está ocupado por otra aplicación.
 
+   **Actualizaciones automáticas**: la app incluye la versión con la que fue
+   compilada (`version.txt`) y al iniciar consulta las [Releases] de GitHub. Si
+   existe una versión más reciente muestra un aviso con el botón "Descargar e
+   instalar": baja el instalador `Setup.exe` a la carpeta de datos, lo ejecuta y
+   el instalador se encarga de cerrar la app, actualizar y volver a abrirla —
+   conservando `prestamos.db`, `.secret` y respaldos (la desinstalación tampoco
+   borra los datos, por si acaso).
+
+[Releases]: https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/releases/latest
+
 Internamente, `backend/serve.py` levanta uvicorn embebido, abre el navegador en
 `http://127.0.0.1:8001` y registra en el log. El puerto se cambia con la variable
 `PRESTAMOS_PORT`.

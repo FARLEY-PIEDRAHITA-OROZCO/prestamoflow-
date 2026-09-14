@@ -78,6 +78,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt pyinstaller
 
+      - name: Write version file
+        working-directory: backend
+        shell: pwsh
+        run: |
+          $tag = "${{ needs.resolve-target.outputs.tag }}"
+          Set-Content -Path version.txt -Value $tag -NoNewline
+
       - name: Build executable (PyInstaller)
         working-directory: backend
         run: python -m PyInstaller PrestamoFlow.spec --noconfirm

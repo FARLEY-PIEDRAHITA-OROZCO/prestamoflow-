@@ -47,10 +47,10 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: deskto
 [Run]
 Filename: "{app}\{#AppExeName}"; Description: "Iniciar {#AppName} ahora"; Flags: nowait postinstall skipifsilent
 
-[UninstallDelete]
-Type: filesandordirs; Name: "{app}\prestamos.db"
-Type: filesandordirs; Name: "{app}\.secret"
-Type: filesandordirs; Name: "{app}\backups"
+; La desinstalación elimina solo el programa. Los datos del cliente
+; (prestamos.db, .secret y respaldos) se conservan en la carpeta de instalación.
+[Messages]
+ConfirmUninstall=¿Quieres desinstalar {#AppName} de este equipo?%n%nSe eliminará el programa, pero tus datos (base de datos, respaldos y clave de seguridad) se conservarán en%n%n{app}%n%n%nPara borrarlos también, elimina esa carpeta manualmente.
 
 [Code]
 procedure KillPrestamoFlow;

@@ -15,7 +15,10 @@ a = Analysis(
     ["serve.py"],
     pathex=[str(ROOT)],
     binaries=[],
-    datas=[(str(FRONTEND_DIST), "frontend_dist")],
+    datas=[(str(FRONTEND_DIST), "frontend_dist")]
+VERSION_FILE = ROOT / "version.txt"
+if VERSION_FILE.exists():
+    datas.append((str(VERSION_FILE), ".")),
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

@@ -135,6 +135,7 @@ function App() {
       <Sidebar page={page} setPage={setPage} user={auth} onLogout={logout} onChangePass={() => setModal({ t: "pass" })} onRecovery={() => setModal({ t: "recovery" })} onBackup={backup} />
 
       <main className="main">
+        <UpdateBanner />
         <Header
           q={q}
           setQ={setQ}
@@ -1184,6 +1185,54 @@ function Skeleton() {
         {[0, 1, 2, 3, 4].map(i => <div key={i} className="sk card" />)}
       </div>
       <div className="sk panel" />
+    </div>
+  );
+}
+
+function UpdateBanner() {
+  const [info, setInfo] = useState(null);
+  const [state, setState] = useState("idle");
+  const [err, setErr] = useState("");
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    api("/updates").then(setInfo).catch(() => {});
+  }, []);
+
+  if (!info || !info.update || dismissed) return null;
+
+  const install = async () => {
+    setErr("");
+    setState("busy");
+    try {
+      await api("/updates/download", { method: "POST" });
+      setState("done");
+    } catch (e) {
+      setErr(e.message);
+      setState("idle");
+    }
+  };
+
+  return (
+    <div className="update-banner">
+      <Sparkles className="update-icon" />
+      <span className="update-text">
+        {state === "done"
+          ? <>Instalando {info.latest}: el programa se cerrará y volverá a abrirse solo.</>
+          : <>Nueva versión <b>{info.latest}</b> disponible. Instálala para recibir los últimos cambios y la nueva funcionalidad.</>}
+        {err && <em className="update-err">{err}</em>}
+      </span>
+      <button
+        className="update-btn"
+        onClick={install}
+        disabled={state === "busy" || state === "done" || !info.url}
+        title={!info.url ? "El instalador de esta versión aún no está publicado, intenta más tarde" : "Descargar e instalar la nueva versión"}
+      >
+        {state === "busy" ? <><Loader2 className="icon-spin" />Descargando…</>
+          : state === "done" ? <><CheckCircle2 />Instalando</>
+          : <><Download />Descargar e instalar</>}
+      </button>
+      <button className="update-dismiss" onClick={() => setDismissed(true)} aria-label="Cerrar aviso"><X /></button>
     </div>
   );
 }

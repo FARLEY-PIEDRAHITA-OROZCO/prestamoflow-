@@ -2,10 +2,11 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from core import app, frontend_dist
-from routers import auth, catalog
+from routers import auth, catalog, updates
 
 app.include_router(auth.router)
 app.include_router(catalog.router)
+app.include_router(updates.router)
 
 _dist = frontend_dist()
 if (_dist / "index.html").exists():

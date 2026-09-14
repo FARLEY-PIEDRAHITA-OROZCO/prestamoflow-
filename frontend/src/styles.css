@@ -407,6 +407,27 @@ tbody tr:last-child td{border-bottom:0}
 /* ============ DRAWER MOVIL ============ */
 .mobile-menu{display:none}
 .drawer-overlay{display:none}
+
+/* ============ ACTUALIZACIONES ============ */
+.update-banner{display:flex;align-items:center;gap:12px;margin:16px 42px 0;padding:12px 12px 12px 16px;
+  background:var(--gradient);color:#fff;border-radius:14px;position:relative;z-index:25;
+  box-shadow:0 14px 30px -14px rgba(124,58,237,.75);animation:pop .25s cubic-bezier(.22,.7,.33,1)}
+.update-icon{flex:none;width:18px;height:18px}
+.update-text{flex:1;min-width:0;font-size:13px;line-height:1.5}
+.update-text b{font-weight:800;font-family:"Manrope",sans-serif}
+.update-err{display:block;font-style:normal;font-size:12px;color:#ffffffd9;margin-top:2px}
+.update-btn{background:#fff;color:var(--primary);font-weight:800;font-size:12.5px;padding:9px 14px;border-radius:10px;
+  display:inline-flex;align-items:center;gap:7px;flex:none;transition:transform .15s,box-shadow .15s}
+.update-btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px -8px rgba(0,0,0,.45)}
+.update-btn:disabled{opacity:.75;cursor:default;transform:none;box-shadow:none}
+.update-btn svg{width:15px;height:15px}
+.update-dismiss{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#ffffffd9;flex:none;transition:background .15s,color .15s}
+.update-dismiss:hover{background:#ffffff1f;color:#fff}
+.update-dismiss svg{width:15px;height:15px}
+@media (max-width:640px){
+  .update-banner{margin:14px 16px 0;flex-wrap:wrap}
+  .update-btn{width:100%;justify-content:center}
+}
 @media (max-width:900px){
   .mobile-menu{display:grid}
   .drawer-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:120;display:flex;animation:fadeIn .2s ease}
