@@ -11,14 +11,16 @@ assert (FRONTEND_DIST / "index.html").exists(), (
     "frontend/dist no existe. Compila el frontend con 'npm run build' antes de empaquetar."
 )
 
+datas=[(str(FRONTEND_DIST), "frontend_dist")]
+VERSION_FILE = ROOT / "version.txt"
+if VERSION_FILE.exists():
+    datas.append((str(VERSION_FILE), "."))
+
 a = Analysis(
     ["serve.py"],
     pathex=[str(ROOT)],
     binaries=[],
-    datas=[(str(FRONTEND_DIST), "frontend_dist")]
-VERSION_FILE = ROOT / "version.txt"
-if VERSION_FILE.exists():
-    datas.append((str(VERSION_FILE), ".")),
+    datas=datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
