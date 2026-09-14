@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.1.2...v1.2.0) (2026-09-14)
+
+
+### Features
+
+* La app avisa y se actualiza sola (descarga el Setup e instala) ([f8584fd](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/commit/f8584fd67331d711da92e9c8440bb24603e1b9cf))
+
 ## [1.1.2](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.1.1...v1.1.2) (2026-09-14)
 
 
