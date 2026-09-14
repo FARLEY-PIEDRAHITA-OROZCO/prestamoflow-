@@ -1,10 +1,12 @@
-import json, re, sys, threading, urllib.request
+import json, logging, os, re, subprocess, sys, threading, urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
 from core import data_dir
+
+log = logging.getLogger("prestamoflow")
 
 router = APIRouter(prefix="/api", tags=["updates"])
 
@@ -96,14 +98,38 @@ def download():
     except OSError:
         raise HTTPException(500, "No se pudo crear la carpeta de descargas")
     name = url.split("/")[-1]
+    target = target_dir / name
+    if target.exists() and target.stat().st_size > 1024 * 1024:
+        log.info("Ya existe %s; reutilizando y lanzando", name)
+        _launch(target)
+        return {"ok": True, "file": name, "reused": True}
     _downloading = True
-    threading.Thread(target=_worker, args=(url, target_dir / name, name), daemon=True).start()
-    return {"ok": True, "file": name}
+    threading.Thread(target=_worker, args=(url, target, name), daemon=True).start()
+    return {"ok": True, "file": name, "reused": False}
+
+
+def _unblock(path):
+    """Quita la marca 'de Internet' (Mark of the Web) que puede impedir que
+    Windows deje abrir el instalador descargado por la propia app."""
+    try:
+        subprocess.run(
+            ["powershell", "-NoProfile", "-Command",
+             f"Unblock-File -LiteralPath '{path.resolve()}'"],
+            timeout=30, capture_output=True, check=False)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass
+
+
+def _launch(target):
+    _unblock(target)
+    try:
+        os.startfile(str(target))
+    except OSError:
+        log.exception("No se pudo lanzar el instalador %s", target)
 
 
 def _worker(url, target, name):
     global _downloading
-    import subprocess
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "PrestamoFlow"})
         with urllib.request.urlopen(req, timeout=600) as r, open(target, "wb") as f:
@@ -112,9 +138,10 @@ def _worker(url, target, name):
                 if not chunk:
                     break
                 f.write(chunk)
-        subprocess.Popen([str(target)], cwd=str(target.parent))
+        log.info("Setup %s descargado (%d bytes); lanzando instalador", name, target.stat().st_size)
+        _launch(target)
     except (OSError, ValueError):
-        pass
+        log.exception("Falló la descarga o el arranque de la actualización")
     finally:
         with _lock:
             _downloading = False
