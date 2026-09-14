@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.3.0...v1.4.0) (2026-09-14)
+
+
+### Features
+
+* indicador de versión instalada visible en el sidebar (validación visual del auto-update) ([b2c9661](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/commit/b2c966131d517f649ec23e8ad378942779d4e5a7))
+
+
+### Bug Fixes
+
+* lanzar el instalador con os.startfile para que se abra en el escritorio del usuario (resuelve SmartScreen ocultando la ventana) ([1e3fb3f](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/commit/1e3fb3f47f68b099f5bf49316224520ed4c59904))
+
 ## [1.3.0](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.2.1...v1.3.0) (2026-09-14)
 
 
