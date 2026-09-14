@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.1.0...v1.1.1) (2026-09-14)
+
+
+### Bug Fixes
+
+* robust installer and runtime against reinstall and port conflicts ([9fc85fe](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/commit/9fc85fe21d8e281b5274ff3547bcda2c35310e42))
+
 ## [1.1.0](https://github.com/FARLEY-PIEDRAHITA-OROZCO/prestamoflow-/compare/v1.0.0...v1.1.0) (2026-09-14)
 
 
