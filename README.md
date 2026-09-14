@@ -28,7 +28,8 @@ Sistema contable de préstamos personales: lleva el control de personas, présta
 9. [Auditoría y respaldo](#auditoría-y-respaldo)
 10. [Manejo del dinero (centavos)](#manejo-del-dinero-centavos)
 11. [Pruebas](#pruebas)
-12. [Responsive / UX](#responsive--ux)
+12. [Empaquetado como aplicación de escritorio (.exe)](#empaquetado-como-aplicación-de-escritorio-exe)
+13. [Responsive / UX](#responsive--ux)
 
 ---
 
@@ -71,6 +72,12 @@ Sistema contable de préstamos personales: lleva el control de personas, présta
   - Descarga manual del backup mediante el botón "Respaldo" (`GET /api/backup`).
   - Copia diaria automática del archivo en `backend/backups/`.
 
+- **Instalación como app de escritorio (Windows):**
+  - Se distribuye como **un solo ejecutable** (`PrestamoFlow.exe`) que sirve la API y la interfaz en un mismo proceso.
+  - No requiere **Python ni Node** en el PC de destino.
+  - Los datos, respaldos y registros se guardan junto al ejecutable.
+  - Instalador opcional (`Setup`) con acceso directo y desinstalador.
+
 ---
 
 ## Arquitectura
@@ -88,7 +95,8 @@ Sistema contable de préstamos personales: lleva el control de personas, présta
 
 - El backend expone una API REST bajo el prefijo `/api`.
 - El frontend opera 100 % contra la API; no tiene acceso directo a la base de datos.
-- El CORS permite orígenes `http://localhost:5173` y `http://127.0.0.1:5173` (dev de Vite).
+- En **desarrollo** el frontend corre aparte (Vite, `:5173`); en la versión **empaquetada**, FastAPI sirve directamente el frontend compilado (`frontend/dist`, montado en `/assets` con SPA en `/`).
+- CORS solo permite los orígenes de dev (`localhost:5173`): al servir la interfaz desde el mismo origen no se necesita.
 
 ### Cómo funciona el cálculo financiero
 
@@ -112,8 +120,10 @@ Sistema_Contable/
 ├── INICIAR-WINDOWS.bat       ← arranque rápido (API + frontend en Windows)
 ├── .gitignore
 ├── backend/
-│   ├── main.py               ← entrada de FastAPI (monta routers)
-│   ├── core.py               ← app, BD, modelos Pydantic, auth JWT, rate limit, migraciones
+│   ├── main.py               ← entrada de FastAPI (routers + sirve la SPA compilada)
+│   ├── serve.py              ← arranque standalone: uvicorn embebido + abre el navegador
+│   ├── core.py               ← app, BD, rutas de datos, modelos, auth JWT, rate limit, migraciones
+│   ├── PrestamoFlow.spec     ← spec PyInstaller para generar el .exe de escritorio
 │   ├── requirements.txt
 │   ├── README.md
 │   ├── routers/
@@ -126,13 +136,15 @@ Sistema_Contable/
 │   ├── prestamos.db          ← base de datos real (NO subir a git)
 │   ├── backups/              ← copias diarias automáticas
 │   └── .secret               ← clave JWT local (NO subir a git)
-└── frontend/
-    ├── index.html
-    ├── package.json
-    └── src/
-        ├── main.jsx          ← toda la interfaz (páginas, modales, estados)
-        ├── lib.jsx           ← helpers: API, money, fechas, avatares, búsqueda
-        └── styles.css        ← estilos y media queries responsive
+├── frontend/
+│   ├── index.html
+│   ├── package.json
+│   └── src/
+│       ├── main.jsx          ← toda la interfaz (páginas, modales, estados)
+│       ├── lib.jsx           ← helpers: API, money, fechas, avatares, búsqueda
+│       └── styles.css        ← estilos y media queries responsive
+└── installer/
+    └── prestamoflow.iss      ← instalador Windows (Inno Setup), opcional
 ```
 
 ---
@@ -175,6 +187,10 @@ Abrir `http://localhost:5173`.
 
 **Primera vez:** la aplicación pedirá **registrar la cuenta inicial** (usuario, nombre y contraseña de al menos 8 caracteres). Al registrarse muestra la **clave de recuperación** una sola vez — guardarla, es imprescindible para recuperar acceso.
 
+### Opción de escritorio (sin Python ni Node)
+
+Ejecutar el `PrestamoFlow.exe` ya compilado (ver [Empaquetado como aplicación de escritorio (.exe)](#empaquetado-como-aplicación-de-escritorio-exe)); abrirá el navegador en `http://127.0.0.1:8001` automáticamente. Los datos se guardan **junto al ejecutable**.
+
 ---
 
 ## Configuración
@@ -183,6 +199,7 @@ Abrir `http://localhost:5173`.
 | --- | --- | --- | --- |
 | `VITE_API_URL` | `frontend/.env.local` | `http://127.0.0.1:8001/api` | URL base de la API para el frontend |
 | `PRESTAMOS_DB` | entorno del backend | `backend/prestamos.db` | Ruta del archivo SQLite (la usan los tests con una base temporal) |
+| `PRESTAMOS_PORT` | entorno del backend | `8001` | Puerto del servidor en modo escritorio (`serve.py`) |
 
 El token de sesión se guarda en `localStorage` como `pf_token`.
 
@@ -410,6 +427,7 @@ Nota técnica: el drawer se renderiza como hermano del `<header>` (no hijo) porq
 
 ## Historial de versiones
 
+- **v5.0.0**: aplicación de escritorio — el backend sirve el frontend compilado, datos en carpeta estable, `serve.py`, empaquetado PyInstaller y script de instalador (Inno Setup).
 - **v4.0.0**: pagos editables (`PUT /api/pagos/{id}`), auditoría `editar_pago`, historial con acciones editar/anular.
 - **v3.x**: mora y vencimientos, respaldo y resumen por persona, rate limiting y recuperación de contraseña, refactor a routers.
 - **v2.x**: montos convertidos a centavos, migración automática, auditoría y anulación de pagos.
